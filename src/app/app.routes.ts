@@ -1,3 +1,19 @@
 import { Routes } from '@angular/router';
 
-export const routes: Routes = [];
+export const routes: Routes = [
+  {
+    path: '',
+    pathMatch: 'full',
+    redirectTo: 'tickets',
+  },
+  {
+    path: 'tickets',
+    loadChildren: () => import('./features/tickets/tickets.routes').then((m) => m.TICKETS_ROUTES),
+  },
+  {
+    path: '**',
+    redirectTo: 'tickets',
+  },
+];
+
+export default routes;
