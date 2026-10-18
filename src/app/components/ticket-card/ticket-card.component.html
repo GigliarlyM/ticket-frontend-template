@@ -1,0 +1,24 @@
+<article
+  class="ticket-card"
+  [class.ticket-card--done]="ticket.status === 'done'"
+  (click)="onSelect()"
+>
+  <header class="ticket-card__header">
+    <h3 class="ticket-card__title">{{ ticket.title }}</h3>
+    <span class="ticket-card__status" [attr.data-status]="ticket.status">{{ statusLabel }}</span>
+  </header>
+
+  <p class="ticket-card__description" *ngIf="ticket.description; else emptyDescription">
+    {{ ticket.description }}
+  </p>
+  <ng-template #emptyDescription>
+    <p class="ticket-card__description ticket-card__description--empty">Sem descrição.</p>
+  </ng-template>
+
+  <footer class="ticket-card__footer">
+    <span class="ticket-card__meta">{{ ticket.id }} · {{ formattedDate }}</span>
+    <button *ngIf="nextStatus" type="button" class="ticket-card__action" (click)="advance($event)">
+      {{ actionLabel }}
+    </button>
+  </footer>
+</article>

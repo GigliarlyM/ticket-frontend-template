@@ -1,0 +1,79 @@
+<section class="ticket-page">
+  <header class="ticket-page__header">
+    <h1 class="ticket-page__title">Tickets</h1>
+    <p class="ticket-page__subtitle">Crie e acompanhe os tickets da sua equipe.</p>
+  </header>
+
+  <form class="ticket-form" (ngSubmit)="createTicket()" novalidate>
+    <div class="ticket-form__field">
+      <label class="ticket-form__label" for="ticket-title">Título *</label>
+      <input
+        id="ticket-title"
+        name="title"
+        type="text"
+        class="ticket-form__input"
+        placeholder="Ex.: Erro ao salvar o formulário"
+        autocomplete="off"
+        maxlength="120"
+        required
+        [(ngModel)]="title"
+      />
+    </div>
+
+    <div class="ticket-form__field">
+      <label class="ticket-form__label" for="ticket-description">Descrição</label>
+      <textarea
+        id="ticket-description"
+        name="description"
+        class="ticket-form__input ticket-form__input--textarea"
+        rows="3"
+        maxlength="500"
+        placeholder="Detalhe o problema (opcional)"
+        [(ngModel)]="description"
+      ></textarea>
+    </div>
+
+    <p class="ticket-form__error" role="alert" *ngIf="errorMessage">{{ errorMessage }}</p>
+
+    <button type="submit" class="ticket-form__submit" [disabled]="!canSubmit">Criar ticket</button>
+  </form>
+
+  <section class="ticket-list">
+    <h2 class="ticket-list__title">Tickets criados</h2>
+
+    <ng-container *ngIf="tickets$ | async as tickets; else loading">
+      <p class="ticket-list__count" *ngIf="tickets.length > 0">{{ tickets.length }} ticket(s)</p>
+
+      <p class="ticket-list__empty" *ngIf="tickets.length === 0">
+        Nenhum ticket por aqui ainda. Crie o primeiro usando o formulário acima.
+      </p>
+
+      <ul class="ticket-list__items" *ngIf="tickets.length > 0">
+        <li class="ticket-list__item" *ngFor="let ticket of tickets; trackBy: trackByTicketId">
+          <app-ticket-card
+            [ticket]="ticket"
+            (statusChange)="changeStatus(ticket, $event)"
+            (select)="selectTicket($event)"
+          ></app-ticket-card>
+        </li>
+      </ul>
+    </ng-container>
+
+    <ng-template #loading>
+      <p class="ticket-list__empty">Carregando tickets...</p>
+    </ng-template>
+  </section>
+
+  <aside class="ticket-detail" *ngIf="selectedTicket as ticket">
+    <h2 class="ticket-detail__title">Detalhes do ticket</h2>
+    <dl class="ticket-detail__list">
+      <dt>ID</dt>
+      <dd>{{ ticket.id }}</dd>
+      <dt>Título</dt>
+      <dd>{{ ticket.title }}</dd>
+      <dt>Descrição</dt>
+      <dd>{{ ticket.description || 'Sem descrição.' }}</dd>
+    </dl>
+    <button type="button" class="ticket-detail__close" (click)="selectedTicket = null">Fechar</button>
+  </aside>
+</section>
