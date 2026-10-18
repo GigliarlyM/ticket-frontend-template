@@ -1,66 +1,99 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, inject } from '@angular/core';
 import { TicketCardComponent } from '../../components/ticket-card/ticket-card.component';
 import { TicketFormComponent } from '../../components/ticket-form/ticket-form.component';
 import { TicketService } from '../../services/ticket.service';
-import { NovoTicket } from '../../models/ticket.model';
 
 @Component({
   selector: 'app-ticket-list',
   standalone: true,
-  imports: [CommonModule, TicketCardComponent, TicketFormComponent],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [CommonModule, TicketFormComponent, TicketCardComponent],
   template: `
-    <section class="tickets">
-      <header class="tickets__header">
-        <h1 class="tickets__titulo">Tickets</h1>
-        <p class="tickets__resumo">{{ total() }} ticket(s) cadastrado(s)</p>
+    <main class="ticket-page">
+      <header class="ticket-page__header">
+        <h1 class="ticket-page__title">Tickets</h1>
+        <p class="ticket-page__subtitle">
+          Crie e visualize os tickets cadastrados.
+        </p>
       </header>
 
-      <app-ticket-form (criar)="onCriar($event)"></app-ticket-form>
+      <app-ticket-form (ticketCreated)="onTicketCreated()"></app-ticket-form>
 
-      <ul class="tickets__lista" *ngIf="!vazio(); else vazioTemplate">
-        <li class="tickets__item" *ngFor="let ticket of tickets()">
-          <app-ticket-card [ticket]="ticket"></app-ticket-card>
-        </li>
-      </ul>
+      <section class="ticket-list" aria-labelledby="ticket-list-title">
+        <h2 id="ticket-list-title" class="ticket-list__title">
+          Lista de tickets ({{ ticketService.count() }})
+        </h2>
 
-      <ng-template #vazioTemplate>
-        <p class="tickets__vazio">Nenhum ticket cadastrado ate o momento.</p>
-      </ng-template>
-    </section>
+        <p class="ticket-list__empty" *ngIf="ticketService.tickets().length === 0">
+          Nenhum ticket cadastrado ainda. Utilize o formulário acima para criar o primeiro.
+        </p>
+
+        <ul class="ticket-list__items" *ngIf="ticketService.tickets().length > 0">
+          <li
+            *ngFor="let ticket of ticketService.tickets(); trackBy: trackByTicketId"
+            class="ticket-list__item"
+          >
+            <app-ticket-card [ticket]="ticket"></app-ticket-card>
+          </li>
+        </ul>
+      </section>
+    </main>
   `,
   styles: [
     `
-      .tickets {
+      .ticket-page {
         display: flex;
         flex-direction: column;
         gap: 1.5rem;
         max-width: 720px;
         margin: 0 auto;
-        padding: 1.5rem 1rem 3rem;
+        padding: 2rem 1rem 3rem;
       }
 
-      .tickets__header {
+      .ticket-page__header {
         display: flex;
         flex-direction: column;
         gap: 0.25rem;
       }
 
-      .tickets__titulo {
+      .ticket-page__title {
         margin: 0;
-        font-size: 1.6rem;
+        font-size: 1.75rem;
         font-weight: 700;
         color: #0f172a;
       }
 
-      .tickets__resumo {
+      .ticket-page__subtitle {
         margin: 0;
-        font-size: 0.9rem;
+        font-size: 0.875rem;
         color: #64748b;
       }
 
-      .tickets__lista {
+      .ticket-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+
+      .ticket-list__title {
+        margin: 0;
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #0f172a;
+      }
+
+      .ticket-list__empty {
+        margin: 0;
+        padding: 1rem;
+        border: 1px dashed #cbd5f5;
+        border-radius: 0.75rem;
+        font-size: 0.875rem;
+        color: #64748b;
+        text-align: center;
+        background-color: #f8fafc;
+      }
+
+      .ticket-list__items {
         display: flex;
         flex-direction: column;
         gap: 0.75rem;
@@ -69,30 +102,20 @@ import { NovoTicket } from '../../models/ticket.model';
         list-style: none;
       }
 
-      .tickets__item {
-        display: block;
-      }
-
-      .tickets__vazio {
-        margin: 0;
-        padding: 1rem;
-        border: 1px dashed #cbd5f5;
-        border-radius: 0.75rem;
-        text-align: center;
-        font-size: 0.9rem;
-        color: #64748b;
+      .ticket-list__item {
+        list-style: none;
       }
     `,
   ],
 })
 export class TicketListComponent {
-  private readonly ticketService = inject(TicketService);
+  protected readonly ticketService = inject(TicketService);
 
-  readonly tickets = this.ticketService.tickets;
-  readonly total = this.ticketService.total;
-  readonly vazio = this.ticketService.vazio;
+  protected onTicketCreated(): void {
+    // Hook para futuras ações após a criação de um ticket.
+  }
 
-  onCriar(dados: NovoTicket): void {
-    this.ticketService.criar(dados);
+  protected trackByTicketId(_index: number, ticket: { id: string }): string {
+    return ticket.id;
   }
 }

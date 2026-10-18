@@ -1,46 +1,63 @@
-import { Injectable, computed, signal } from '@angular/core';
-import { NovoTicket, Ticket } from '../models/ticket.model';
+import { computed, Injectable, signal } from '@angular/core';
+import { Ticket } from '../models/ticket.model';
+
+const STORAGE_KEY = 'tickets';
 
 @Injectable({ providedIn: 'root' })
 export class TicketService {
-  private readonly state = signal<Ticket[]>([]);
+  private readonly ticketsState = signal<Ticket[]>(this.readFromStorage());
 
-  readonly tickets = this.state.asReadonly();
-  readonly total = computed(() => this.state().length);
-  readonly vazio = computed(() => this.state().length === 0);
+  readonly tickets = this.ticketsState.asReadonly();
 
-  /**
-   * Cria um novo ticket.
-   * Regra de negocio: todo ticket deve ter titulo obrigatorio.
-   */
-  criar(dados: NovoTicket): Ticket {
-    const titulo = this.normalizar(dados?.titulo);
+  readonly count = computed(() => this.ticketsState().length);
 
-    if (!titulo) {
-      throw new Error('O titulo do ticket e obrigatorio.');
-    }
-
+  addTicket(title: string, description: string): Ticket {
     const ticket: Ticket = {
-      id: this.gerarId(),
-      titulo,
-      descricao: this.normalizar(dados?.descricao),
-      criadoEm: new Date(),
+      id: this.generateId(),
+      title: title.trim(),
+      description: description.trim(),
+      createdAt: new Date(),
     };
 
-    this.state.update((lista) => [ticket, ...lista]);
+    this.ticketsState.update((tickets) => [ticket, ...tickets]);
+    this.persist();
     return ticket;
   }
 
-  limpar(): void {
-    this.state.set([]);
+  removeTicket(id: string): void {
+    this.ticketsState.update((tickets) => tickets.filter((ticket) => ticket.id !== id));
+    this.persist();
   }
 
-  private normalizar(valor: string | null | undefined): string {
-    return (valor ?? '').trim();
+  getById(id: string): Ticket | undefined {
+    return this.ticketsState().find((ticket) => ticket.id === id);
   }
 
-  private gerarId(): string {
-    const sufixo = Math.random().toString(36).slice(2, 8);
-    return `tkt-${Date.now().toString(36)}-${sufixo}`;
+  private generateId(): string {
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+      return crypto.randomUUID();
+    }
+    return `ticket-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  }
+
+  private readFromStorage(): Ticket[] {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) {
+        return [];
+      }
+      const parsed = JSON.parse(raw) as Array<Omit<Ticket, 'createdAt'> & { createdAt: string }>;
+      return parsed.map((item) => ({ ...item, createdAt: new Date(item.createdAt) }));
+    } catch {
+      return [];
+    }
+  }
+
+  private persist(): void {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(this.ticketsState()));
+    } catch {
+      // Ignora erros de armazenamento (modo privado, cota excedida, etc.)
+    }
   }
 }

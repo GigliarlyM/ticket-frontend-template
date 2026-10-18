@@ -1,9 +1,9 @@
 import { Routes } from '@angular/router';
-import { TicketListComponent } from './ticket-list/ticket-list.component';
 
-export const TICKETS_ROUTES: Routes = [
+export const ticketRoutes: Routes = [
   {
     path: '',
-    component: TicketListComponent
-  }
+    loadComponent: () =>
+      import('./pages/ticket-list/ticket-list.component').then((m) => m.TicketListComponent),
+  },
 ];
