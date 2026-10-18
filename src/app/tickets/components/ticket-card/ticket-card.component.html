@@ -1,0 +1,24 @@
+<article class="ticket-card" [class.ticket-card--closed]="!isOpen">
+  <header class="ticket-card__header">
+    <h3 class="ticket-card__title">{{ ticket.title }}</h3>
+    <span class="ticket-card__status" [class.ticket-card__status--closed]="!isOpen">
+      {{ statusLabel }}
+    </span>
+  </header>
+
+  <p class="ticket-card__description" *ngIf="ticket.description; else emptyDescription">
+    {{ ticket.description }}
+  </p>
+  <ng-template #emptyDescription>
+    <p class="ticket-card__description ticket-card__description--empty">Sem descricao.</p>
+  </ng-template>
+
+  <footer class="ticket-card__footer">
+    <time class="ticket-card__date" [attr.datetime]="ticket.createdAt.toISOString()">
+      {{ ticket.createdAt | date: 'dd/MM/yyyy HH:mm' }}
+    </time>
+    <button class="ticket-card__action" type="button" (click)="onToggle()">
+      {{ isOpen ? 'Fechar ticket' : 'Reabrir ticket' }}
+    </button>
+  </footer>
+</article>

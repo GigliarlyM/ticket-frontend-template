@@ -1,98 +1,75 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TicketCardComponent } from '../../components/ticket-card/ticket-card.component';
-import { TicketFormComponent } from '../../components/ticket-form/ticket-form.component';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { TICKET_LIMITS, Ticket } from '../../models/ticket.model';
 import { TicketService } from '../../services/ticket.service';
-import { NovoTicket } from '../../models/ticket.model';
+import { TicketCardComponent } from '../../components/ticket-card/ticket-card.component';
 
+/**
+ * Tela de lista de tickets: formulario de criacao + listagem dos tickets.
+ */
 @Component({
   selector: 'app-ticket-list',
   standalone: true,
-  imports: [CommonModule, TicketCardComponent, TicketFormComponent],
+  imports: [CommonModule, ReactiveFormsModule, TicketCardComponent],
+  templateUrl: './ticket-list.component.html',
+  styleUrls: ['./ticket-list.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <section class="tickets">
-      <header class="tickets__header">
-        <h1 class="tickets__titulo">Tickets</h1>
-        <p class="tickets__resumo">{{ total() }} ticket(s) cadastrado(s)</p>
-      </header>
-
-      <app-ticket-form (criar)="onCriar($event)"></app-ticket-form>
-
-      <ul class="tickets__lista" *ngIf="!vazio(); else vazioTemplate">
-        <li class="tickets__item" *ngFor="let ticket of tickets()">
-          <app-ticket-card [ticket]="ticket"></app-ticket-card>
-        </li>
-      </ul>
-
-      <ng-template #vazioTemplate>
-        <p class="tickets__vazio">Nenhum ticket cadastrado ate o momento.</p>
-      </ng-template>
-    </section>
-  `,
-  styles: [
-    `
-      .tickets {
-        display: flex;
-        flex-direction: column;
-        gap: 1.5rem;
-        max-width: 720px;
-        margin: 0 auto;
-        padding: 1.5rem 1rem 3rem;
-      }
-
-      .tickets__header {
-        display: flex;
-        flex-direction: column;
-        gap: 0.25rem;
-      }
-
-      .tickets__titulo {
-        margin: 0;
-        font-size: 1.6rem;
-        font-weight: 700;
-        color: #0f172a;
-      }
-
-      .tickets__resumo {
-        margin: 0;
-        font-size: 0.9rem;
-        color: #64748b;
-      }
-
-      .tickets__lista {
-        display: flex;
-        flex-direction: column;
-        gap: 0.75rem;
-        margin: 0;
-        padding: 0;
-        list-style: none;
-      }
-
-      .tickets__item {
-        display: block;
-      }
-
-      .tickets__vazio {
-        margin: 0;
-        padding: 1rem;
-        border: 1px dashed #cbd5f5;
-        border-radius: 0.75rem;
-        text-align: center;
-        font-size: 0.9rem;
-        color: #64748b;
-      }
-    `,
-  ],
 })
 export class TicketListComponent {
+  private readonly formBuilder = inject(FormBuilder);
   private readonly ticketService = inject(TicketService);
+
+  readonly titleMaxLength = TICKET_LIMITS.titleMaxLength;
+  readonly descriptionMaxLength = TICKET_LIMITS.descriptionMaxLength;
 
   readonly tickets = this.ticketService.tickets;
   readonly total = this.ticketService.total;
-  readonly vazio = this.ticketService.vazio;
+  readonly openCount = this.ticketService.openCount;
 
-  onCriar(dados: NovoTicket): void {
-    this.ticketService.criar(dados);
+  readonly form = this.formBuilder.nonNullable.group({
+    title: ['', [Validators.required, Validators.maxLength(TICKET_LIMITS.titleMaxLength)]],
+    description: ['', [Validators.maxLength(TICKET_LIMITS.descriptionMaxLength)]],
+  });
+
+  /** Mensagem de erro exibida acima do botao de envio. */
+  errorMessage: string | null = null;
+
+  get titleControl() {
+    return this.form.controls.title;
+  }
+
+  get descriptionControl() {
+    return this.form.controls.description;
+  }
+
+  /** Valida o formulario e cria um novo ticket. */
+  submit(): void {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      this.errorMessage = 'Informe um titulo para criar o ticket.';
+      return;
+    }
+
+    const { title, description } = this.form.getRawValue();
+
+    try {
+      this.ticketService.create({ title, description });
+      this.form.reset({ title: '', description: '' });
+      this.errorMessage = null;
+    } catch (error) {
+      this.errorMessage =
+        error instanceof Error ? error.message : 'Nao foi possivel criar o ticket.';
+    }
+  }
+
+  /** Alterna a situacao do ticket selecionado. */
+  toggleStatus(id: string): void {
+    this.ticketService.toggleStatus(id);
+  }
+
+  /** Rastreia os itens da lista pelo id do ticket. */
+  trackByTicketId(_index: number, ticket: Ticket): string {
+    return ticket.id;
   }
 }

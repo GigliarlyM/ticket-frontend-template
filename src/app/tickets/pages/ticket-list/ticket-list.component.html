@@ -1,0 +1,86 @@
+<section class="ticket-list">
+  <header class="ticket-list__header">
+    <div>
+      <h1 class="ticket-list__title">Tickets</h1>
+      <p class="ticket-list__subtitle">Crie e acompanhe os tickets do time.</p>
+    </div>
+
+    <dl class="ticket-list__stats">
+      <div class="ticket-list__stat">
+        <dt>Total</dt>
+        <dd>{{ total() }}</dd>
+      </div>
+      <div class="ticket-list__stat">
+        <dt>Abertos</dt>
+        <dd>{{ openCount() }}</dd>
+      </div>
+    </dl>
+  </header>
+
+  <form class="ticket-form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <h2 class="ticket-form__title">Novo ticket</h2>
+
+    <div class="ticket-form__field">
+      <label class="ticket-form__label" for="ticket-title">Titulo *</label>
+      <input
+        id="ticket-title"
+        class="ticket-form__input"
+        type="text"
+        formControlName="title"
+        placeholder="Ex.: Erro ao salvar o pedido"
+        autocomplete="off"
+        [attr.maxlength]="titleMaxLength"
+      />
+      <p
+        class="ticket-form__error"
+        *ngIf="titleControl.touched && titleControl.hasError('required')"
+      >
+        O titulo do ticket e obrigatorio.
+      </p>
+      <p
+        class="ticket-form__error"
+        *ngIf="titleControl.touched && titleControl.hasError('maxlength')"
+      >
+        O titulo deve ter no maximo {{ titleMaxLength }} caracteres.
+      </p>
+    </div>
+
+    <div class="ticket-form__field">
+      <label class="ticket-form__label" for="ticket-description">Descricao</label>
+      <textarea
+        id="ticket-description"
+        class="ticket-form__input ticket-form__input--textarea"
+        formControlName="description"
+        rows="3"
+        placeholder="Detalhe o problema (opcional)"
+        [attr.maxlength]="descriptionMaxLength"
+      ></textarea>
+      <p
+        class="ticket-form__error"
+        *ngIf="descriptionControl.touched && descriptionControl.hasError('maxlength')"
+      >
+        A descricao deve ter no maximo {{ descriptionMaxLength }} caracteres.
+      </p>
+    </div>
+
+    <p class="ticket-form__error ticket-form__error--global" *ngIf="errorMessage">
+      {{ errorMessage }}
+    </p>
+
+    <button class="ticket-form__submit" type="submit">Criar ticket</button>
+  </form>
+
+  <section class="ticket-list__items">
+    <h2 class="ticket-list__section-title">Tickets cadastrados</h2>
+
+    <p class="ticket-list__empty" *ngIf="tickets().length === 0">
+      Nenhum ticket cadastrado ainda. Crie o primeiro ticket no formulario acima.
+    </p>
+
+    <ul class="ticket-list__grid" *ngIf="tickets().length > 0">
+      <li class="ticket-list__item" *ngFor="let ticket of tickets(); trackBy: trackByTicketId">
+        <app-ticket-card [ticket]="ticket" (statusToggle)="toggleStatus($event)"></app-ticket-card>
+      </li>
+    </ul>
+  </section>
+</section>
