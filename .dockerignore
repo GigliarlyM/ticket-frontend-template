@@ -4,3 +4,10 @@ dist
 coverage
 .git
 .github
+
+node_modules
+dist
+.angular
+coverage
+.git
+.github

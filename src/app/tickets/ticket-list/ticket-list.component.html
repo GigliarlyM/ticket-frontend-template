@@ -1,0 +1,11 @@
+<div class="ticket-list-container">
+  <h2>Lista de Tickets</h2>
+  <app-ticket-form (ticketCreated)="onTicketCreated($event)"></app-ticket-form>
+  <div class="tickets">
+    @for (ticket of tickets(); track ticket.id) {
+      <app-ticket-card [ticket]="ticket"></app-ticket-card>
+    } @empty {
+      <p>Nenhum ticket cadastrado.</p>
+    }
+  </div>
+</div>
