@@ -1,41 +1,30 @@
-# Tickets
+# Funcionalidade de Tickets
 
-Documentacao da funcionalidade de lista de tickets do boilerplate.
-
-## Contexto
-
-Aplicacao Angular (standalone components) para validar o boilerplate, permitindo
-criar tickets e visualizar a lista de tickets cadastrados.
+Aplicação Angular para criar e listar tickets, usada para validar o rebuild do boilerplate.
 
 ## Funcionalidades
 
-- Criar ticket com titulo e descricao.
-- Listar tickets cadastrados (mais recentes primeiro).
-
-## Regras de negocio
-
-- Todo ticket deve ter titulo obrigatorio: o titulo e normalizado com `trim()` e
-  nao pode ficar vazio.
-- O titulo aceita no maximo 120 caracteres (`TITULO_MAX_LENGTH`).
-- A descricao e opcional e aceita no maximo 500 caracteres (`DESCRICAO_MAX_LENGTH`).
-- Cada ticket recebe um `id` gerado localmente e a data de criacao (`criadoEm`).
-
-## Criterios de aceite
-
-- Usuario consegue criar um ticket.
-- Usuario consegue visualizar a lista de tickets.
+- Criar ticket com título (obrigatório) e descrição (opcional).
+- Listar tickets cadastrados em cartões.
+- Persistência local via `localStorage`.
 
 ## Estrutura
 
-| Caminho | Descricao |
-| --- | --- |
-| `src/app/tickets/models/ticket.model.ts` | Tipos e limites de campos |
-| `src/app/tickets/services/ticket.service.ts` | Estado em memoria e regras de negocio |
-| `src/app/tickets/components/ticket-form/ticket-form.component.ts` | Formulario de criacao de ticket |
-| `src/app/tickets/components/ticket-card/ticket-card.component.ts` | Card de exibicao do ticket |
-| `src/app/tickets/pages/ticket-list/ticket-list.component.ts` | Tela de listagem de tickets |
-| `src/app/app.routes.ts` | Rotas da aplicacao |
+- `src/app/tickets/models/ticket.model.ts`: modelo de dados do ticket.
+- `src/app/tickets/services/ticket.service.ts`: serviço reativo com signals.
+- `src/app/tickets/components/ticket-card`: componente de exibição do ticket.
+- `src/app/tickets/components/ticket-form`: formulário reativo de criação.
+- `src/app/tickets/pages/ticket-list`: tela de listagem.
+- `src/app/tickets/tickets.routes.ts`: rotas do domínio de tickets.
+- `src/app/app.routes.ts`: rotas raiz com redirect para `/tickets`.
 
-## Fora de escopo
+## Como executar
 
-- Autenticacao de usuarios.
+1. Instale as dependências: `npm install`.
+2. Inicie o servidor de desenvolvimento: `npm start`.
+3. Acesse `http://localhost:4200` e navegue até `/tickets`.
+
+## Regras de negócio
+
+- Todo ticket deve ter título obrigatório.
+- A descrição é opcional.
